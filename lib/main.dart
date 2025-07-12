@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:login_ui/loginpage.dart';
-
+import 'package:login_ui/responsive/dekstop_scaffold.dart';
+import 'package:login_ui/responsive/tablet_scaffold.dart';
+import 'package:login_ui/responsive/mobile_scaffold.dart';
+import 'package:login_ui/responsive/responsive_layout.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -8,16 +11,18 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
       theme: ThemeData(
         primaryColor: Colors.blue,
       ),
-      home : Loginpage(),
+      home : ResponsiveLayout(
+        mobileScaffold: MobileScaffold(),
+        tabletScaffold: TabletScaffold(),
+        desktopScaffold: DesktopScaffold()
+      ),
     );
   }
 }
