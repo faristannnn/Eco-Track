@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:login_ui/pages/dashboard.dart'; 
+import 'package:login_ui/pages/user_dashboard.dart'; 
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Loginpage extends StatefulWidget {
   const Loginpage({super.key});
@@ -12,21 +16,69 @@ class _LoginpageState extends State<Loginpage> {
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
-  void _handleLogin() {
-    final username = usernameController.text;
-    final password = passwordController.text;
+void _handleLogin() async {
+  final email = usernameController.text;
+  final password = passwordController.text;
 
-    if (username.isNotEmpty && password.isNotEmpty) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const DashboardPage()),
+  if (email.isNotEmpty && password.isNotEmpty) {
+    try {
+      final url = Uri.parse('https://express-production-c53f.up.railway.app/login');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password}),
       );
-    } else {
+
+      if (response.statusCode == 200) {
+        final data        = jsonDecode(response.body);
+        final accessToken = data['accessToken'];
+        final message     = data['message'] ?? 'Login berhasil';
+        final user        = data['user'];
+        final level       = user?['level'];
+        final userId      = user?['_id']; 
+
+        // Simpan token
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('access_token', accessToken);
+        await prefs.setString('user_level', level ?? '');
+        await prefs.setString('user_id', userId ?? '');
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+
+        // Redirect sesuai level
+        if (level == "admin" || level == "petugas") {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const DashboardPage()),
+          );
+        } else if (level == "user") {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const UserDashboardPage()),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Level pengguna tidak dikenali")),
+          );
+        }
+      }
+
+
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Username dan Password harus diisi")),
+        const SnackBar(content: Text("Terjadi kesalahan. Coba lagi nanti.")),
       );
+      debugPrint("Login error: $e");
     }
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Email dan Password harus diisi")),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

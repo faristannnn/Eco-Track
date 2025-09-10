@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:login_ui/loginpage.dart';
 import 'package:login_ui/responsive/dekstop_scaffold.dart';
 import 'package:login_ui/responsive/tablet_scaffold.dart';
 import 'package:login_ui/responsive/mobile_scaffold.dart';
