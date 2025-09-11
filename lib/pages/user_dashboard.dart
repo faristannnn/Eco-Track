@@ -8,6 +8,9 @@ import '../loginpage.dart';
 import '../model/tps_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'user_pengaduan_page.dart';
+import 'user_video_page.dart';
+import 'trash_user.dart';
+
 class UserDashboardPage extends StatefulWidget {
   const UserDashboardPage({super.key});
 
@@ -17,6 +20,7 @@ class UserDashboardPage extends StatefulWidget {
 
 class _UserDashboardPageState extends State<UserDashboardPage> {
   final MapController _mapController = MapController();
+  final TextEditingController _searchController = TextEditingController();
   List<Marker> _markers = [];
   List<dynamic> _layanan = [];
 
@@ -26,6 +30,11 @@ class _UserDashboardPageState extends State<UserDashboardPage> {
     _fetchTps();
     _fetchLayanan();
   }
+  @override
+void dispose() {
+  _searchController.dispose();
+  super.dispose();
+}
 
   Future<String?> _getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -280,11 +289,6 @@ class _UserDashboardPageState extends State<UserDashboardPage> {
                       }),
             ),
             ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text("Logout"),
-              onTap: () => _logout(context),
-            ),
-            ListTile(
               leading: const Icon(Icons.report, color: Colors.orange),
               title: const Text("Pengaduan TPS"),
               onTap: () {
@@ -295,7 +299,33 @@ class _UserDashboardPageState extends State<UserDashboardPage> {
                 );
               },
             ),
-
+            ListTile(
+              leading: const Icon(Icons.video_library, color: Colors.purple),
+              title: const Text("Video Edukasi"),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const UserVideoPage()),
+                );
+              },
+            ),
+             ListTile(
+              leading: const Icon(Icons.delete, color: Colors.grey),
+              title: const Text("Informasi sampah"),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const TrashUserPage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text("Logout"),
+              onTap: () => _logout(context),
+            ),
           ],
         ),
       ),
@@ -328,13 +358,20 @@ class _UserDashboardPageState extends State<UserDashboardPage> {
               elevation: 3,
               borderRadius: BorderRadius.circular(10),
               child: TextField(
-                decoration: const InputDecoration(
-                  hintText: "Cari lokasi...",
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12),
-                  border: InputBorder.none,
-                  suffixIcon: Icon(Icons.search),
-                ),
+                controller: _searchController,
                 onSubmitted: (value) => _searchLocation(value),
+                decoration: InputDecoration(
+                  hintText: "Cari lokasi...",
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                  border: InputBorder.none,
+                  suffixIcon: GestureDetector(
+                    onTap: () {
+                      final query = _searchController.text;
+                      _searchLocation(query);
+                    },
+                    child: const Icon(Icons.search),
+                  ),
+                ),
               ),
             ),
           ),
